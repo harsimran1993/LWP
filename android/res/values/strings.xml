@@ -14,7 +14,8 @@
     <string name="settings_MoveBoxSummary">Variation on effects over a cyclic period.</string>
     <string name="settings_SetLockSummary">Set Live Wallpaper on Lock-Screen.</string>
     <string name="settings_GyroTitle">Enable Gyroscope</string>
-    <string name="settings_GyroSummary">uses Gyroscope if available\ndefaults to Accelerometer.</string>
+    <string name="settings_GyroSummary">keep disabled for accelerometer \n Double tap on wallpaper to re-centre axis.</string>
+    <string name="menu_refresh">refresh</string>
 
     <string-array name="settings_listTestEntries">
         <item>parallax-Butterly</item>

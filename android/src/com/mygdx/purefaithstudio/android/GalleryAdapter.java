@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.mygdx.purefaithstudio.Config;
 
 import java.util.ArrayList;
@@ -19,14 +21,16 @@ import java.util.ArrayList;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
 
-    private ArrayList<ImageItem> mData = new ArrayList();
+    private ArrayList<Gallery> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+    private Context mContext;
 
     // data is passed into the constructor
-    public GalleryAdapter(Context context, ArrayList<ImageItem> data) {
+    public GalleryAdapter(Context context, ArrayList<Gallery> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
+        this.mContext = context;
         Log.i("harsim","adapter constructor");
     }
     @Override
@@ -40,17 +44,21 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(GalleryAdapter.ViewHolder holder, int position) {
-        ImageItem item =mData.get(position);
+        Gallery item =mData.get(position);
         holder.imageTitle.setText(item.getTitle());
-        holder.image.setImageResource(item.getImage());
-        holder.madeBy.setText(item.getMadeBy());
-        holder.downloads.setText(""+item.getDownloads());
+        holder.madeBy.setText(item.getAddedBy());
+        holder.downloads.setText(""+10);
         if(position * 10 < (Config.points + Config.fps)){
             holder.lock.setVisibility(View.GONE);
         }
         else{
             holder.lock.setVisibility(View.VISIBLE);
         }
+        Glide.with(mContext).load(item.getThumbUrl())
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .placeholder(R.drawable.download)
+                .error(R.drawable.error)
+                .into(holder.image);
 
         Log.i("harsim","loadeddata");
     }
@@ -80,7 +88,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     }
 
     // convenience method for getting data at click position
-    public ImageItem getItem(int id) {
+    public Gallery getItem(int id) {
         return mData.get(id);
     }
 

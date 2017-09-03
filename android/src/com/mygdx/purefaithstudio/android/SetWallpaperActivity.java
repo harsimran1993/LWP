@@ -1,5 +1,6 @@
 package com.mygdx.purefaithstudio.android;
 
+import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -8,9 +9,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -36,10 +41,21 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
+import com.google.gson.Gson;
 import com.mygdx.purefaithstudio.Config;
 import com.special.ResideMenu.ResideMenu;
 import com.special.ResideMenu.ResideMenuItem;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class SetWallpaperActivity extends AppCompatActivity implements RewardedVideoAdListener,View.OnClickListener,GalleryAdapter.ItemClickListener{
@@ -69,6 +85,21 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
     private ResideMenuItem itemRate;
     private ResideMenuItem itemShare;
     private ResideMenuItem itemContact;
+    private ArrayList<Gallery> gallery;
+    private SwipeRefreshLayout msSwipeRefreshLayout ;
+    private ResideMenu.OnMenuListener menuListener = new ResideMenu.OnMenuListener() {
+        @Override
+        public void openMenu() {
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.backarrow);
+            //Toast.makeText(mContext, "Menu is opened!", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void closeMenu() {
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.burger);
+            //Toast.makeText(mContext, "Menu is closed!", Toast.LENGTH_SHORT).show();
+        }
+    };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,15 +121,6 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
         earn = (Button) findViewById(R.id.earnbtn);
 		prefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
 		editor = prefs.edit();
-		/*// center text
-		r.setGravity(Gravity.CENTER);
-		g.setGravity(Gravity.CENTER);
-		b.setGravity(Gravity.CENTER);
-		// select color
-		color = colorp.getColor();
-		r.setText("R:" + Color.red(color));
-		g.setText("G:" + Color.green(color));
-		b.setText("B:" + Color.blue(color));*/
         /*editor.putInt("points",300);
         editor.commit();*/
 		Config.points = prefs.getInt("points", 0);		wp.setText("" + Config.points);
@@ -119,25 +141,31 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
             }
         });
 
-       /* //Image grid
-        gridView = (GridView) findViewById(R.id.imageGrid);
-        gridAdapter = new GridViewImageAdapter(SetWallpaperActivity.this,R.layout.lwitem,getData());
-        gridView.setAdapter(gridAdapter);
+       //image grid recycler view
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        msSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        msSwipeRefreshLayout.setRefreshing(true);
+
+        if(isNetworkConnected()){
+            new DownloadImage().execute();
+        }
+        else{
+            Toast.makeText(SetWallpaperActivity.this,"Please check your internet connect and retry",Toast.LENGTH_SHORT).show();
+            msSwipeRefreshLayout.setRefreshing(false);
+        }
+        msSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-               chosewall(position);
+            public void onRefresh() {
+                if(isNetworkConnected()){
+                    new DownloadImage().execute();
+                }
+                else{
+                    if(msSwipeRefreshLayout.isRefreshing())
+                        msSwipeRefreshLayout.setRefreshing(false);
+                    Toast.makeText(SetWallpaperActivity.this,"Please check your internet connect and retry",Toast.LENGTH_SHORT).show();
+                }
             }
         });
-        image grid ends*/
-       //image grid recycler view
-        recyclerView = (RecyclerView) findViewById(R.id.parallaxGallery);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        adapter = new GalleryAdapter(this,getData());
-        adapter.setClickListener(this);
-        recyclerView.setAdapter(adapter);
-
         //ads
         mAd = MobileAds.getRewardedVideoAdInstance(this);
         mAd.setRewardedVideoAdListener(this);
@@ -161,6 +189,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
         /*mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);*/
 
     }
+
     //reside menu starts
     private void setUpMenu() {
 
@@ -191,19 +220,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
         resideMenu.addMenuItem(itemRate, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemContact, ResideMenu.DIRECTION_LEFT);
     }
-    private ResideMenu.OnMenuListener menuListener = new ResideMenu.OnMenuListener() {
-        @Override
-        public void openMenu() {
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.backarrow);
-            //Toast.makeText(mContext, "Menu is opened!", Toast.LENGTH_SHORT).show();
-        }
 
-        @Override
-        public void closeMenu() {
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.burger);
-            //Toast.makeText(mContext, "Menu is closed!", Toast.LENGTH_SHORT).show();
-        }
-    };
     @Override
     public void onClick(View view) {
 
@@ -329,7 +346,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
             editor.putInt("points", Config.points);
             editor.commit();
             //wp.setText(""+Config.points);
-            //gridAdapter.notifyDataSetInvalidated();
+            adapter.notifyDataSetChanged();
         }
         catch(Exception e){
 
@@ -361,7 +378,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == requestCode) {
-            Log.i("harsim","activityresult recieved");
+           /* Log.i("harsim","activityresult recieved");
             // Make sure the request was successful
             if (resultCode == RESULT_CANCELED) {
                 Log.i("harsim","cancel");
@@ -371,6 +388,9 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
             }
             if(resultCode == RESULT_OK){
                 Log.i("harsim","Ok");
+            }*/
+            if (mInterstitialAd.isLoaded()) {
+                mInterstitialAd.show();
             }
         }
     }
@@ -511,9 +531,6 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
                     Toast.makeText(SetWallpaperActivity.this, "Please go to your system settings or long press on your homescreen to set Live Wallpaper", Toast.LENGTH_SHORT).show();
                 }
             }
-            if (mInterstitialAd.isLoaded()) {
-                mInterstitialAd.show();
-            }
         }
         else{
             AlertDialog.Builder builder = new AlertDialog.Builder(SetWallpaperActivity.this);
@@ -529,44 +546,120 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
             builder.show();
         }
     }
-	/*private class ImageData{
-        public String imageURL,imageName;
-        public ImageData(String imageURL,String imageName){
-            this.imageName = imageName;
-            this.imageURL = imageURL;
-        }
-    }
-	public class DownloadImage extends AsyncTask<ArrayList<ImageData>, Integer, Long>{
+
+	public class DownloadImage extends AsyncTask<String, String, String> {
+        HttpURLConnection conn;
+        URL url = null;
+        String urls="http://192.168.0.102:8080/wallpaperserver/list"; //to change to server
 
         @Override
-        protected Long doInBackground(ArrayList<ImageData>... imgData) {
-            int count = imgData.length;
-            long totalSize = 0;
-            int i=0;
-            for (ImageData imd:imgData[0]) {
-                i++;
-                try {
-                    downloadImageURL(imd.imageURL,context,imd.imageName);
-                publishProgress(i);
-                // Escape early if cancel() is called
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (isCancelled()) break;
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+        }
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+
+            // Enter URL address where your json file resides
+            // Even you can make call to php file which returns json data
+            url = new URL(urls);
+
+        } catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return e.toString();
+        }
+            try {
+
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(10000);
+                conn.setRequestMethod("GET");
+
+                // setDoOutput to true as we recieve data from json file
+                //conn.setDoOutput(true);
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return e1.toString();
             }
-            return totalSize;
-        }
-        protected void onProgressUpdate(Integer... progress) {
-            //setProgressPercent(progress[0]);
+            try {
+
+                int response_code = conn.getResponseCode();
+                Log.i("harsim",""+response_code);
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+                    return null;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return e.toString();
+            } finally {
+                conn.disconnect();
+            }
         }
 
-        protected void onPostExecute(Long result) {
-            showDialog(0);
-        }
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Gson gson = new Gson();
+            try {
+                if (!s.equals("") && s!=null) {
+                    GalleryResolver gsr = gson.fromJson(s, GalleryResolver.class);
+                    if (gsr != null) {
+                        gallery = gsr.getGallery();
+                        if (gallery != null) {
+                            recyclerView = (RecyclerView) findViewById(R.id.parallaxGallery);
+                            recyclerView.setLayoutManager(new GridLayoutManager(SetWallpaperActivity.this, 2));
+                            adapter = new GalleryAdapter(SetWallpaperActivity.this, gallery);
+                            adapter.setClickListener(SetWallpaperActivity.this);
+                            recyclerView.setAdapter(adapter);
+                        } else {
+                            Log.i("harsim", "gallery null");
+                        }
+                    } else {
+                        Log.i("harsim", "gsr null");
+                    }
+                }
+                else {
+                    Log.i("harsim", "network Connection error!!");
+                }
+            }
+            catch (Exception e){
+                Log.i("harsim", "server unreachable!!");
+                Toast.makeText(SetWallpaperActivity.this,"Server not reachable plz try again in a while!!",Toast.LENGTH_SHORT).show();
+            }
 
+            if(msSwipeRefreshLayout.isRefreshing())
+                msSwipeRefreshLayout.setRefreshing(false);
+
+        }
     }
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-    public Bitmap loadLocalImage(String fileName, Context context) throws FileNotFoundException {
+        return cm.getActiveNetworkInfo() != null;
+    }
+   /* public Bitmap loadLocalImage(String fileName, Context context) throws FileNotFoundException {
         File imageFile = new File(getSaveFolder(context),fileName);
         InputStream inputStream = new FileInputStream(imageFile);
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();

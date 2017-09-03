@@ -18,13 +18,13 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Vector2;
 
 public class Main extends Base {
-	private OrthographicCamera camera;
-	private SpriteBatch batch;
+    private OrthographicCamera camera;
+    private SpriteBatch batch;
     private Vector2 touch;
-	private Texture texture[];
-	private ParticleLayer partlay;
-	private FrameBuffer fbo;
-	private TextureRegion fbr;
+    private Texture texture[];
+    private ParticleLayer partlay;
+    private FrameBuffer fbo;
+    private TextureRegion fbr;
     private float accelX=0,lastAccelX=0,thresh=0.2f,fact=0.4f;
     private float accelY=0,lastAccelY=0;
     //private float accelZ=0,lastAccelZ=0;
@@ -33,45 +33,47 @@ public class Main extends Base {
     private boolean parallax = false,gyroscope=false;
     private BitmapFont font;
 
-	public Main(Game game, com.mygdx.purefaithstudio.Resolver resolver) {
-		super(game, resolver);
-		// Never put "show" part here
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 480, 800);
-	}
+    public Main(Game game, com.mygdx.purefaithstudio.Resolver resolver) {
+        super(game, resolver);
+        // Never put "show" part here
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 480, 800);
+    }
 
-	@Override
-	public void show() {
-		 Config.load();
+    @Override
+    public void show() {
+        Config.load();
         resetCamera(480,800);
-		batch = new SpriteBatch();
-		batch.setProjectionMatrix(camera.combined);
+        batch = new SpriteBatch();
+        batch.setProjectionMatrix(camera.combined);
         batch.enableBlending();
-        gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
-       if(!parallax) {
-           setInputProcessor();
-       }
+        if(Config.useGyro && !gyroscope) {
+            gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
+        }
+        if(!parallax) {
+            setInputProcessor();
+        }
         font = new BitmapFont();
         font.setColor(Color.WHITE);
         partlay = new ParticleLayer();
         partlay.loadeffect();
-		loadImageTexture();
+        loadImageTexture();
         if (fbo == null) {
             fbo = new FrameBuffer(Format.RGBA8888, 480, 800, false);
             fbr = new TextureRegion(fbo.getColorBufferTexture());
             fbr.flip(false, true);
         }
-		//batch.setShader(partlay.shaderProgram);
-		// resetCamera(sW,sH);
-	}
-	@Override
-	public void dispose() {
-		batch.dispose();
+        //batch.setShader(partlay.shaderProgram);
+        // resetCamera(sW,sH);
+    }
+    @Override
+    public void dispose() {
+        batch.dispose();
         font.dispose();
-		if(partlay !=null)
-		partlay.dispose();
-		if(fbo != null)
-		fbo.dispose();
+        if(partlay !=null)
+            partlay.dispose();
+        if(fbo != null)
+            fbo.dispose();
         if(texture !=null)
             for(Texture t:texture) {
                 if (t != null)
@@ -81,84 +83,96 @@ public class Main extends Base {
         texture = null;
         fbo = null;
         fbr=null;
-	}
+    }
 
-	@Override
-	public void resize(int width, int height) {
+    @Override
+    public void resize(int width, int height) {
         super.resize(width, height);
         dispose();
         show();
-	}
+    }
 
-	@Override
-	public void render(float delta) {
-		if (!(Config.listTest.equals(ParticleLayer.EveNo))) {
+    @Override
+    public void render(float delta) {
+        if (!(Config.listTest.equals(ParticleLayer.EveNo))) {
             Gdx.app.log("harsim","partlay reloaded");
             if(partlay!=null)
-			    partlay.loadeffect();
+                partlay.loadeffect();
             loadImageTexture();
-		}
-		delta = delta > 0.2f ? 0.2f : delta;
+        }
+        if(Config.useGyro && !gyroscope) {
+            gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
+        }
+        //Gdx.app.log("harsim","render");
+        delta = delta > 0.2f ? 0.2f : delta;
         if(partlay!=null)
-		    partlay.update(delta);
+            partlay.update(delta);
         //accelerometer
         if(gyroscope)
-            accelX+=Gdx.input.getGyroscopeY() * 0.75f;//roll
+            accelX-=Gdx.input.getGyroscopeY() * 0.7f;//roll
         else
-		    accelX = Gdx.input.getAccelerometerX();
+            accelX = Gdx.input.getAccelerometerX();
         if(accelX > 7) accelX = 7;
         if(accelX < -7) accelX = -7;
         accelX = accelX * fact+ lastAccelX * (1-fact);
 
         if(gyroscope)
-            accelY+=Gdx.input.getGyroscopeX() *0.75f;//pitch
+            accelY+=Gdx.input.getGyroscopeX() * 0.7f;//pitch
         else
-	        accelY = Gdx.input.getAccelerometerY() -4.5f;
+            accelY = Gdx.input.getAccelerometerY() -4.5f;
+
+        if(accelY > 7) accelY = 7;
+        if(accelY < -7) accelY = -7;
         accelY = accelY * fact+ lastAccelY * (1-fact) ;
 	    /*accelZ = Gdx.input.getAccelerometerZ() ;
         accelZ = accelZ * fact+ lastAccelZ * (1-fact);*/
 
-		draw(delta); // Main draw part
+        draw(delta); // Main draw part
 
         if (Math.abs(accelX - lastAccelX) > thresh) {
-                lastAccelX = accelX;
+            lastAccelX = accelX;
         }
         if (Math.abs(accelY - lastAccelY) > thresh) {
-                lastAccelY = accelY;
+            lastAccelY = accelY;
         }
 
         /*if (Math.abs(accelZ - lastAccelZ) > thresh) {
         lastAccelZ = accelZ;
         }*/
 
+        if(gyroscope && touchcount > 1){
+            accelY = 0;
+            accelX = 0;
+        }
         if (isAndroid)
-		limitFPS();
+            limitFPS();
 
-	}
+    }
 
-	private void draw(float delta) {
-		super.render(delta);
-		 //Gdx.gl.glClearColor(0, 0, 0, 1);
+    private void draw(float delta) {
+        super.render(delta);
+        //Gdx.gl.glClearColor(0, 0, 0, 1);
         //Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-		Gdx.gl.glClearColor(Config.backColor[0] / 255.0f, Config.backColor[1] / 255.0f, Config.backColor[2] / 255.0f, 1);
+        Gdx.gl.glClearColor(Config.backColor[0] / 255.0f, Config.backColor[1] / 255.0f, Config.backColor[2] / 255.0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         //Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		if (isAndroid && resolver != null) // In daydream resolver is null
-			camera.position.x = (480 / 2) - resolver.getxPixelOffset();
+        if (isAndroid && resolver != null) // In daydream resolver is null
+            camera.position.x = (480 / 2) - resolver.getxPixelOffset();
 
-		camera.update();
-		batch.begin();
+        camera.update();
+        batch.begin();
         if(texture !=null) {
             for (int i = size - 1; i > 0; i--) {
                 if (texture[i] != null) {
                     dipMul = i*Config.Sensitivity;
                     moveX = accelX * dipMul;
                     moveY = accelY * dipMul;
-                    if (moveX > 7 * dipMul) moveX = 7 * dipMul;
+                    /*if (moveX > 7 * dipMul) moveX = 7 * dipMul;
                     if (moveX < -(7 * dipMul)) moveX = -7 * dipMul;
                     if (moveY > 7 * dipMul) moveY = 7 * dipMul;
-                    if (moveY < -(7 * dipMul)) moveY = -7 * dipMul;
+                    if (moveY < -(7 * dipMul)) moveY = -7 * dipMul;*/
+                    //if (moveY > 10 * dipMul || moveY < -(10 * dipMul)) accelY =0;
                     batch.draw(texture[i], -(7 * dipMul) + moveX, -(7 * dipMul)+ moveY, 480+(14*dipMul), 800+(14*dipMul));
                 }
             }
@@ -195,24 +209,24 @@ public class Main extends Base {
         font.draw(batch,"pitch:"+accelY,10,760);*/
        /* font.draw(batch,"rotation"+accelZ,10,740);*/
         batch.end();
-	}
+    }
 
-	private void resetCamera(float sW, float sH) {
-		camera.setToOrtho(false, sW, sH);
-		// camera.position.set(sW / 2, sH / 2, 0);
-	}
-	public void setInputProcessor(){
-		Gdx.input.setInputProcessor(new InputProcessor() {
+    private void resetCamera(float sW, float sH) {
+        camera.setToOrtho(false, sW, sH);
+        // camera.position.set(sW / 2, sH / 2, 0);
+    }
+    public void setInputProcessor(){
+        Gdx.input.setInputProcessor(new InputProcessor() {
 
             @Override
             public boolean touchUp(int screenX, int screenY, int pointer, int button) {
                 // TODO Auto-generated method stub
                 touchcount--;
                 if (com.mygdx.purefaithstudio.Config.persistent) {
-					//partlay.setWind((240 - touch.x) * 0.2f);
+                    //partlay.setWind((240 - touch.x) * 0.2f);
                     if(partlay!=null)
-					    partlay.setScale(0.6f);
-				}
+                        partlay.setScale(0.6f);
+                }
                 return false;
             }
 
@@ -232,27 +246,20 @@ public class Main extends Base {
                 // TODO Auto-generated method stub
 
                 touchcount++;
-                if(touchcount>1 && gyroscope){
-                    if(touchcount>2) {
-                        accelY = 0;
-                    }
-                    else
-                        accelX=0;
-                }
                     /*touch = new Vector2();
                     touch.x = (int) (screenX * 480 / Gdx.graphics.getWidth());
                     touch.y = (int) (screenY * 800 / Gdx.graphics.getHeight());
                     touch.y = 800 - touch.y;
                     System.out.println(touch.x+":"+touch.y);*/
                 if (com.mygdx.purefaithstudio.Config.persistent) {
-					//partlay.setWind((240 - touch.x) * 0.2f);
+                    //partlay.setWind((240 - touch.x) * 0.2f);
                     if(partlay!=null) {
                        /* if (ParticleLayer.LWcase == 6) {
                             partlay.setPos(touch.x, touch.y, 0);
                         }*/
                         partlay.setScale(1 / 0.6f);
                     }
-				}
+                }
 				/*fire.setPos(touch.x, touch.y);
 				if (Config.moving) {
 				}
@@ -282,14 +289,14 @@ public class Main extends Base {
             @Override
             public boolean keyTyped(char character) {
                 // TODO Auto-generated method stub
-                    if (!isAndroid && Gdx.input.isKeyPressed(Keys.ESCAPE))
-                        Gdx.app.exit();
-                    if(!isAndroid && Gdx.input.isKeyPressed(Keys.RIGHT)) {
-                        Config.listTest = ""+(Integer.parseInt(Config.listTest) + 1);
-                    }
-                    if(!isAndroid && Gdx.input.isKeyPressed(Keys.LEFT)) {
-                        Config.listTest = ""+(Integer.parseInt(Config.listTest) - 1);
-                    }
+                if (!isAndroid && Gdx.input.isKeyPressed(Keys.ESCAPE))
+                    Gdx.app.exit();
+                if(!isAndroid && Gdx.input.isKeyPressed(Keys.RIGHT)) {
+                    Config.listTest = ""+(Integer.parseInt(Config.listTest) + 1);
+                }
+                if(!isAndroid && Gdx.input.isKeyPressed(Keys.LEFT)) {
+                    Config.listTest = ""+(Integer.parseInt(Config.listTest) - 1);
+                }
                 return false;
             }
 
@@ -300,7 +307,7 @@ public class Main extends Base {
                 return false;
             }
         });
-	}
+    }
 
     public void loadImageTexture(){
         if(texture !=null) {
@@ -334,31 +341,31 @@ public class Main extends Base {
                 parallax = false;
                 texture = new Texture[size];
                 texture[0]  = new Texture(Gdx.files.internal("data/shana.png"));
-            	break;
+                break;
             case 4:
                 size=1;
                 parallax = false;
                 texture = new Texture[size];
                 texture[0]  = new Texture(Gdx.files.internal("data/shana2.png"));
-        	    break;
+                break;
             case 5:
                 size=1;
                 parallax = false;
                 texture = new Texture[size];
                 texture[0]  = new Texture(Gdx.files.internal("data/kiritoSAO.png"));
-        	    break;
-			case 6:
+                break;
+            case 6:
                 size=1;
                 parallax = false;
                 texture = new Texture[size];
                 texture[0]  = new Texture(Gdx.files.internal("data/yukatagirl.png"));
-			    break;
-			case 7:
+                break;
+            case 7:
                 size=1;
                 parallax = false;
                 texture = new Texture[size];
                 texture[0]  = new Texture(Gdx.files.internal("data/inori35.png"));
-			    break;
+                break;
             case 0:
                 size=3;
                 parallax = true;
@@ -456,6 +463,32 @@ public class Main extends Base {
                 texture[2]  = new Texture(Gdx.files.internal("data/flow1.png"));
                 texture[3]  = new Texture(Gdx.files.internal("data/flow2.png"));
                 texture[4]  = new Texture(Gdx.files.internal("data/flow3.jpg"));
+                break;
+            case 20:
+                size=3;
+                parallax = true;
+                texture = new Texture[size];
+                texture[0]  = new Texture(Gdx.files.internal("data/wonder0.png"));
+                texture[1]  = new Texture(Gdx.files.internal("data/wonder1.png"));
+                texture[2]  = new Texture(Gdx.files.internal("data/wonder2.jpg"));
+                break;
+            case 21:
+                size=4;
+                parallax = true;
+                texture = new Texture[size];
+                texture[0]  = new Texture(Gdx.files.internal("data/assassin0.png"));
+                texture[1]  = new Texture(Gdx.files.internal("data/assassin1.png"));
+                texture[2]  = new Texture(Gdx.files.internal("data/assassin2.png"));
+                texture[3]  = new Texture(Gdx.files.internal("data/assassin3.jpg"));
+                break;
+            case 22:
+                size=4;
+                parallax = true;
+                texture = new Texture[size];
+                texture[0]  = new Texture(Gdx.files.internal("data/avenger0.png"));
+                texture[1]  = new Texture(Gdx.files.internal("data/avenger1.png"));
+                texture[2]  = new Texture(Gdx.files.internal("data/avenger2.png"));
+                texture[3]  = new Texture(Gdx.files.internal("data/avenger3.jpg"));
                 break;
             default:
                 size=1;

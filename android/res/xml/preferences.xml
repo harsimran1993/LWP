@@ -45,9 +45,5 @@
 		<Preference android:key="more"
 					android:title="@string/settings_button_otherAppsTitle" />
 
-		<Preference android:key="support"
-					android:title="@string/settings_button_supportTitle"
-					android:summary="@string/support_email"
-					android:enabled="false" />
 	</PreferenceCategory>
 </PreferenceScreen>
