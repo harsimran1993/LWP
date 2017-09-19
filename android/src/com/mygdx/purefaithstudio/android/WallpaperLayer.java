@@ -11,7 +11,7 @@ public class WallpaperLayer implements Serializable
 
     @SerializedName("Layers")
     @Expose
-    private List<Layer> layers = new ArrayList<Layer>();
+    private ArrayList<Layer> layers = new ArrayList<Layer>();
     private final static long serialVersionUID = -3629294240545618357L;
 
     /**
@@ -25,16 +25,16 @@ public class WallpaperLayer implements Serializable
      *
      * @param layers
      */
-    public WallpaperLayer(List<Layer> layers) {
+    public WallpaperLayer(ArrayList<Layer> layers) {
         super();
         this.layers = layers;
     }
 
-    public List<Layer> getLayers() {
+    public ArrayList<Layer> getLayers() {
         return layers;
     }
 
-    public void setLayers(List<Layer> layers) {
+    public void setLayers(ArrayList<Layer> layers) {
         this.layers = layers;
     }
 

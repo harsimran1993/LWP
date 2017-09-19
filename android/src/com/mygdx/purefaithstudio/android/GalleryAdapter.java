@@ -46,8 +46,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     public void onBindViewHolder(GalleryAdapter.ViewHolder holder, int position) {
         Gallery item =mData.get(position);
         holder.imageTitle.setText(item.getTitle());
-        holder.madeBy.setText(item.getAddedBy());
-        holder.downloads.setText(""+10);
+        holder.madeBy.setText("by:"+item.getAddedBy());
+        holder.downloads.setText(""+item.getDownloads());
         if(position * 10 < (Config.points + Config.fps)){
             holder.lock.setVisibility(View.GONE);
         }
@@ -83,7 +83,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
         @Override
         public void onClick(View view) {
-            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+            if (mClickListener != null) mClickListener.onItemClick(view, mData.get(getAdapterPosition()));
         }
     }
 
@@ -99,6 +99,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, int position);
+        void onItemClick(View view, Gallery gallery);
     }
 }

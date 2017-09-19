@@ -1,6 +1,5 @@
 package com.mygdx.purefaithstudio.android;
 
-import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -8,12 +7,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -25,10 +21,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -46,19 +40,9 @@ import com.mygdx.purefaithstudio.Config;
 import com.special.ResideMenu.ResideMenu;
 import com.special.ResideMenu.ResideMenuItem;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
-public class SetWallpaperActivity extends AppCompatActivity implements RewardedVideoAdListener,View.OnClickListener,GalleryAdapter.ItemClickListener{
+public class SetWallpaperActivity extends AppCompatActivity implements RewardedVideoAdListener,View.OnClickListener,GalleryAdapter.ItemClickListener,FetchList.FetchListener{
     //google ads
 	private RewardedVideoAd mAd;
     private InterstitialAd mInterstitialAd;
@@ -87,6 +71,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
     private ResideMenuItem itemContact;
     private ArrayList<Gallery> gallery;
     private SwipeRefreshLayout msSwipeRefreshLayout ;
+    private FetchList fetchlist;
     private ResideMenu.OnMenuListener menuListener = new ResideMenu.OnMenuListener() {
         @Override
         public void openMenu() {
@@ -141,28 +126,38 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
             }
         });
 
+        //load offline list first
+        WallpaperDataManager.loadDown(getApplicationContext());
        //image grid recycler view
 
         msSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         msSwipeRefreshLayout.setRefreshing(true);
 
         if(isNetworkConnected()){
-            new DownloadImage().execute();
+            //new DownloadImage().execute();
+            fetchlist = new FetchList();
+            fetchlist.setFetchListener(this);
+            fetchlist.execute();
         }
         else{
             Toast.makeText(SetWallpaperActivity.this,"Please check your internet connect and retry",Toast.LENGTH_SHORT).show();
             msSwipeRefreshLayout.setRefreshing(false);
+            downloadedGalleryList();
         }
         msSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 if(isNetworkConnected()){
-                    new DownloadImage().execute();
+                    //new DownloadImage().execute();
+                    fetchlist = new FetchList();
+                    fetchlist.setFetchListener(SetWallpaperActivity.this);
+                    fetchlist.execute();
                 }
                 else{
                     if(msSwipeRefreshLayout.isRefreshing())
                         msSwipeRefreshLayout.setRefreshing(false);
                     Toast.makeText(SetWallpaperActivity.this,"Please check your internet connect and retry",Toast.LENGTH_SHORT).show();
+                    downloadedGalleryList();
                 }
             }
         });
@@ -364,7 +359,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
 
 	}
 
-	private ArrayList<ImageItem> getData(){
+	/*private ArrayList<ImageItem> getData(){
         final ArrayList<ImageItem> imageItems = new ArrayList<>();
         TypedArray imgs = getResources().obtainTypedArray(R.array.image_ids);
         TypedArray names = getResources().obtainTypedArray(R.array.settings_listTestEntries);
@@ -372,7 +367,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
             imageItems.add(new ImageItem(imgs.getResourceId(i, -1), names.getString(i),"By Harsimran Singh",1000));
         }
         return imageItems;
-    }
+    }*/
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -503,8 +498,13 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
     }
 
     @Override
-    public void onItemClick(View view, int position) {
-        choosewall(position);
+    public void onItemClick(View view, Gallery g) {
+        //choosewall(position);
+        Intent intent = new Intent(SetWallpaperActivity.this,PreviewActivity.class);
+        Bundle b= new Bundle();
+        b.putSerializable("wallpaper",g);
+        intent.putExtras(b);
+        startActivity(intent);
     }
 
     public void choosewall(int position){
@@ -547,113 +547,49 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
         }
     }
 
-	public class DownloadImage extends AsyncTask<String, String, String> {
-        HttpURLConnection conn;
-        URL url = null;
-        String urls="http://192.168.0.102:8080/wallpaperserver/list"; //to change to server
+    public void downloadedGalleryList(){
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-        }
-        @Override
-        protected String doInBackground(String... strings) {
-            try {
-
-            // Enter URL address where your json file resides
-            // Even you can make call to php file which returns json data
-            url = new URL(urls);
-
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return e.toString();
-        }
-            try {
-
-                // Setup HttpURLConnection class to send and receive data from php and mysql
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(10000);
-                conn.setRequestMethod("GET");
-
-                // setDoOutput to true as we recieve data from json file
-                //conn.setDoOutput(true);
-
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-                return e1.toString();
-            }
-            try {
-
-                int response_code = conn.getResponseCode();
-                Log.i("harsim",""+response_code);
-                // Check if successful connection made
-                if (response_code == HttpURLConnection.HTTP_OK) {
-
-                    // Read data sent from server
-                    InputStream input = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        result.append(line);
-                    }
-
-                    // Pass data to onPostExecute method
-                    return (result.toString());
-
-                } else {
-                    return null;
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                return e.toString();
-            } finally {
-                conn.disconnect();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Gson gson = new Gson();
-            try {
-                if (!s.equals("") && s!=null) {
-                    GalleryResolver gsr = gson.fromJson(s, GalleryResolver.class);
-                    if (gsr != null) {
-                        gallery = gsr.getGallery();
-                        if (gallery != null) {
-                            recyclerView = (RecyclerView) findViewById(R.id.parallaxGallery);
-                            recyclerView.setLayoutManager(new GridLayoutManager(SetWallpaperActivity.this, 2));
-                            adapter = new GalleryAdapter(SetWallpaperActivity.this, gallery);
-                            adapter.setClickListener(SetWallpaperActivity.this);
-                            recyclerView.setAdapter(adapter);
-                        } else {
-                            Log.i("harsim", "gallery null");
-                        }
-                    } else {
-                        Log.i("harsim", "gsr null");
-                    }
-                }
-                else {
-                    Log.i("harsim", "network Connection error!!");
-                }
-            }
-            catch (Exception e){
-                Log.i("harsim", "server unreachable!!");
-                Toast.makeText(SetWallpaperActivity.this,"Server not reachable plz try again in a while!!",Toast.LENGTH_SHORT).show();
-            }
-
-            if(msSwipeRefreshLayout.isRefreshing())
-                msSwipeRefreshLayout.setRefreshing(false);
-
-        }
+        recyclerView = (RecyclerView) findViewById(R.id.parallaxGallery);
+        recyclerView.setLayoutManager(new GridLayoutManager(SetWallpaperActivity.this, 2));
+        adapter = new GalleryAdapter(SetWallpaperActivity.this, new ArrayList<>(WallpaperDataManager.downloadsGallery.values()));
+        adapter.setClickListener(SetWallpaperActivity.this);
+        recyclerView.setAdapter(adapter);
     }
+
+    @Override
+    public void onPostExecute(String s) {
+        Gson gson = new Gson();
+        try {
+            if (!s.equals("") && s!=null) {
+                GalleryResolver gsr = gson.fromJson(s, GalleryResolver.class);
+                if (gsr != null) {
+                    gallery = gsr.getGallery();
+                    if (gallery != null) {
+                        recyclerView = (RecyclerView) findViewById(R.id.parallaxGallery);
+                        recyclerView.setLayoutManager(new GridLayoutManager(SetWallpaperActivity.this, 2));
+                        adapter = new GalleryAdapter(SetWallpaperActivity.this, gallery);
+                        adapter.setClickListener(SetWallpaperActivity.this);
+                        recyclerView.setAdapter(adapter);
+                    } else {
+                        Log.i("harsim", "gallery null");
+                    }
+                } else {
+                    Log.i("harsim", "gsr null");
+                }
+            }
+            else {
+                Log.i("harsim", "network Connection error!!");
+            }
+        }
+        catch (Exception e){
+            Log.i("harsim", "server unreachable!!");
+            Toast.makeText(SetWallpaperActivity.this,"Server not reachable plz try again in a while!!",Toast.LENGTH_SHORT).show();
+        }
+
+        if(msSwipeRefreshLayout.isRefreshing())
+            msSwipeRefreshLayout.setRefreshing(false);
+    }
+
     private boolean isNetworkConnected() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 

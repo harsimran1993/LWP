@@ -113,4 +113,21 @@ public class Gallery implements Serializable
         this.downloads = downloads;
     }
 
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof Gallery))
+            return false;
+        Gallery that = (Gallery) obj;
+        return this.getID() == that.getID();
+    }
+
+    /*@Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 7 * hash + this.getID().hashCode();
+        hash = 7 * hash + this.getDirectoryName().hashCode();
+        return hash;
+    }*/
 }
