@@ -48,6 +48,8 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
         wallpaperData = (Gallery) b.get("wallpaper");
         final String id = wallpaperData.getID();
         Log.i("wallpaperdata",WallpaperDataManager.downloadsGallery.toString());
+        Log.i("harsim",""+getFilesDir());
+        Log.i("harsim",""+getExternalFilesDir(""));
         if(WallpaperDataManager.downloadsGallery.containsKey(wallpaperData.getID()))
         {
                 download.setVisibility(View.GONE);
@@ -99,7 +101,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
                         {
                             SaveManager.requestImage(getApplicationContext(),layer.getLayerUrl(),wallpaperData.getDirectoryName(),layer.getLayerName()+layer.getLayerType());
                         }
-                        WallpaperDataManager.galleryLayers.put(wallpaperData.getID(),wallpaperLayer);
+                        //WallpaperDataManager.galleryLayers.put(wallpaperData.getID(),wallpaperLayer);
                         WallpaperDataManager.downloadsGallery.put(wallpaperData.getID(), wallpaperData);
                     }
                     WallpaperDataManager.saveDown(getApplicationContext());

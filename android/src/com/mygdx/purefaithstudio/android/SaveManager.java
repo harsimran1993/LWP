@@ -1,6 +1,7 @@
 package com.mygdx.purefaithstudio.android;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,10 +27,11 @@ public class SaveManager {
     public static synchronized void saveToFileSystem(Context context, Object object, String fileName) {
         try {
             File dataDir = null;
-            dataDir = new File(context.getFilesDir(),"LWPData");
+            File root = context.getExternalFilesDir("");
+            dataDir = new File(root,"LWPData");
             if(!dataDir.isDirectory())
                 dataDir.mkdir();
-            String tempPath = context.getFilesDir() + "/LWPData/" + fileName + ".bin";
+            String tempPath = root + "/LWPData/" + fileName + ".bin";
             File file = new File(tempPath);
             ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
             oos.writeObject(object);
@@ -42,8 +44,9 @@ public class SaveManager {
 
     public static synchronized Object readFromFileSystem(Context context, String binFileName) {
         Object obj = new Object();
+        File root = context.getExternalFilesDir("");
         try {
-            String tempPath = context.getFilesDir() + "/LWPData/" + binFileName + ".bin";
+            String tempPath = root + "/LWPData/" + binFileName + ".bin";
             File file = new File(tempPath);
             if (file.exists()) {
                 ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
@@ -61,13 +64,15 @@ public class SaveManager {
 
         //make directory structure
         File dataDir = null;
-        dataDir = new File(context.getFilesDir(),"LWPData");
+        File root = context.getExternalFilesDir("");
+        dataDir = new File(root,"LWPData");
         if(!dataDir.isDirectory())
             dataDir.mkdir();
-        dataDir = new File(context.getFilesDir(),"LWPData/"+ directory);
+        dataDir = new File(root,"LWPData/"+ directory);
         if(!dataDir.isDirectory())
             dataDir.mkdir();
-        String tempPath = context.getFilesDir() + "/LWPData/"+ directory + "/" + filename;
+        String tempPath = root + "/LWPData/"+ directory + "/" + filename;
+        Log.i("harsim",tempPath);
         final File file = new File(tempPath);
 
         //request file from server
