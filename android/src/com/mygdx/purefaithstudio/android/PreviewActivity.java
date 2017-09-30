@@ -30,6 +30,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
     private ImageView[] imgv = new ImageView[5];
     private FetchLayer fetchLayer;
     private Button download,preview;
+    private WallpaperLayer wallpaperLayer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,8 +92,16 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
             @Override
             public void onClick(View view) {
                 try {
-                    if(!WallpaperDataManager.downloadsGallery.containsKey(wallpaperData.getID()))
-                        WallpaperDataManager.downloadsGallery.put(wallpaperData.getID(),wallpaperData);
+
+                    if(!WallpaperDataManager.downloadsGallery.containsKey(wallpaperData.getID())) {
+                        layers = wallpaperLayer.getLayers();
+                        for(Layer layer : layers)
+                        {
+                            SaveManager.requestImage(getApplicationContext(),layer.getLayerUrl(),wallpaperData.getDirectoryName(),layer.getLayerName()+layer.getLayerType());
+                        }
+                        WallpaperDataManager.galleryLayers.put(wallpaperData.getID(),wallpaperLayer);
+                        WallpaperDataManager.downloadsGallery.put(wallpaperData.getID(), wallpaperData);
+                    }
                     WallpaperDataManager.saveDown(getApplicationContext());
                     download.setVisibility(View.GONE);
                     preview.setVisibility(View.VISIBLE);
@@ -130,7 +139,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
         try {
             if (!s.equals("") && s!=null) {
 
-                WallpaperLayer wallpaperLayer = gson.fromJson(s,WallpaperLayer.class);
+                wallpaperLayer = gson.fromJson(s,WallpaperLayer.class);
                 if(wallpaperLayer !=null){
                     layers = wallpaperLayer.getLayers();
                     if(layers !=null){
