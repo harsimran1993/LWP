@@ -109,6 +109,7 @@ public class SetWallpaperActivity extends AppCompatActivity implements RewardedV
         /*editor.putInt("points",300);
         editor.commit();*/
 		Config.points = prefs.getInt("points", 0);		wp.setText("" + Config.points);
+        Config.useGyro = prefs.getBoolean("gyroscope",false);
 
         //colorPicker Collapse
         colorCollapser = (ImageButton) findViewById(R.id.colorCollapser);

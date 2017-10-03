@@ -28,7 +28,8 @@
     <com.mygdx.purefaithstudio.android.parallaxLayout.ParallaxLayerLayout
         android:id="@+id/parallax"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/black">
         <ImageView
             android:id="@+id/img0"
             android:layout_width="match_parent"

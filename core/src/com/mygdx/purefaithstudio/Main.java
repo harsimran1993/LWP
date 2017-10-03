@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Vector2;
 
@@ -22,15 +23,15 @@ public class Main extends Base {
     private SpriteBatch batch;
     private Vector2 touch;
     private Texture texture[];
-    private ParticleLayer partlay;
-    private FrameBuffer fbo;
-    private TextureRegion fbr;
+    //private ParticleLayer partlay;
+    //private FrameBuffer fbo;
+    //private TextureRegion fbr;
     private float accelX=0,lastAccelX=0,thresh=0.2f,fact=0.4f;
     private float accelY=0,lastAccelY=0;
     //private float accelZ=0,lastAccelZ=0;
     private float dipMul=0.0f,touchcount=0,moveX,moveY;
     private int size=0;
-    private boolean parallax = false,gyroscope=false;
+    private boolean /*parallax = false,*/gyroscope=false;
     private BitmapFont font;
 
     public Main(Game game, com.mygdx.purefaithstudio.Resolver resolver) {
@@ -43,6 +44,7 @@ public class Main extends Base {
     @Override
     public void show() {
         Config.load();
+        Config.loadwcd();
         resetCamera(480,800);
         batch = new SpriteBatch();
         batch.setProjectionMatrix(camera.combined);
@@ -50,19 +52,21 @@ public class Main extends Base {
         if(Config.useGyro && !gyroscope) {
             gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
         }
-        if(!parallax) {
+        /*if(!parallax) {
             setInputProcessor();
-        }
+        }*/
         font = new BitmapFont();
         font.setColor(Color.WHITE);
-        partlay = new ParticleLayer();
-        partlay.loadeffect();
         loadImageTexture();
+        /*partlay = new ParticleLayer();
+        partlay.loadeffect();
         if (fbo == null) {
             fbo = new FrameBuffer(Format.RGBA8888, 480, 800, false);
             fbr = new TextureRegion(fbo.getColorBufferTexture());
             fbr.flip(false, true);
-        }
+        }*/
+        accelY = 0;
+        accelX = 0;
         //batch.setShader(partlay.shaderProgram);
         // resetCamera(sW,sH);
     }
@@ -70,19 +74,19 @@ public class Main extends Base {
     public void dispose() {
         batch.dispose();
         font.dispose();
-        if(partlay !=null)
+        /*if(partlay !=null)
             partlay.dispose();
         if(fbo != null)
             fbo.dispose();
+        fbr.getTexture().dispose();
+        fbo = null;
+        fbr=null;*/
         if(texture !=null)
             for(Texture t:texture) {
                 if (t != null)
                     t.dispose();
             }
-        fbr.getTexture().dispose();
         texture = null;
-        fbo = null;
-        fbr=null;
     }
 
     @Override
@@ -94,19 +98,19 @@ public class Main extends Base {
 
     @Override
     public void render(float delta) {
-        if (!(Config.listTest.equals(ParticleLayer.EveNo))) {
+        /*if (!(Config.listTest.equals(ParticleLayer.EveNo))) {
             Gdx.app.log("harsim","partlay reloaded");
-            if(partlay!=null)
+           /* if(partlay!=null)
                 partlay.loadeffect();
             loadImageTexture();
-        }
+        }*/
         if(Config.useGyro && !gyroscope) {
             gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
         }
         //Gdx.app.log("harsim","render");
         delta = delta > 0.2f ? 0.2f : delta;
-        if(partlay!=null)
-            partlay.update(delta);
+        /*if(partlay!=null)
+            partlay.update(delta);*/
         //accelerometer
         if(gyroscope)
             accelX-=Gdx.input.getGyroscopeY() * 0.7f;//roll
@@ -180,16 +184,16 @@ public class Main extends Base {
 
         if(size>0 && texture[0] != null) {
 
-            if(parallax) {
+            /*if(parallax) {
                 batch.draw(texture[0], 0, 0, 480, 800);
             }
-            else {
+            else {*/
                 batch.draw(texture[0], -20+ accelX * 2, 0, 520, 800);
-            }
+            /*}*/
         }
 
         //batch.setShader(null);
-        if (partlay.pe !=null) {
+       /* if (partlay.pe !=null) {
             fbo.begin();
             Gdx.gl.glClearColor(0, 0, 0, 0);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -203,7 +207,7 @@ public class Main extends Base {
             fbo.end();
             //particle effects layer
             batch.draw(fbr, 0, 0, 480, 800);
-        }
+        }*/
         //onscreen acclero debug
        /*font.draw(batch,"roll:"+accelX,10,780);
         font.draw(batch,"pitch:"+accelY,10,760);*/
@@ -221,12 +225,12 @@ public class Main extends Base {
             @Override
             public boolean touchUp(int screenX, int screenY, int pointer, int button) {
                 // TODO Auto-generated method stub
-                touchcount--;
+               /* touchcount--;
                 if (com.mygdx.purefaithstudio.Config.persistent) {
                     //partlay.setWind((240 - touch.x) * 0.2f);
                     if(partlay!=null)
                         partlay.setScale(0.6f);
-                }
+                }*/
                 return false;
             }
 
@@ -245,21 +249,18 @@ public class Main extends Base {
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
                 // TODO Auto-generated method stub
 
-                touchcount++;
+               /* touchcount++;
                     /*touch = new Vector2();
                     touch.x = (int) (screenX * 480 / Gdx.graphics.getWidth());
                     touch.y = (int) (screenY * 800 / Gdx.graphics.getHeight());
                     touch.y = 800 - touch.y;
                     System.out.println(touch.x+":"+touch.y);*/
-                if (com.mygdx.purefaithstudio.Config.persistent) {
+                /*if (com.mygdx.purefaithstudio.Config.persistent) {
                     //partlay.setWind((240 - touch.x) * 0.2f);
                     if(partlay!=null) {
-                       /* if (ParticleLayer.LWcase == 6) {
-                            partlay.setPos(touch.x, touch.y, 0);
-                        }*/
                         partlay.setScale(1 / 0.6f);
                     }
-                }
+                }*/
 				/*fire.setPos(touch.x, touch.y);
 				if (Config.moving) {
 				}
@@ -317,184 +318,13 @@ public class Main extends Base {
             }
             texture = null;
         }
-        switch(Integer.parseInt(Config.listTest)){
-            case 8:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0] = new Texture(Gdx.files.internal("data/blue2.jpg"));
-                break;
-            case 9:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/natsu.jpg"));
-                break;
-            case 10:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/blue3.png"));
-                break;
-            case 13:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/shana.png"));
-                break;
-            case 4:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/shana2.png"));
-                break;
-            case 5:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/kiritoSAO.png"));
-                break;
-            case 6:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/yukatagirl.png"));
-                break;
-            case 7:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/inori35.png"));
-                break;
-            case 0:
-                size=3;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0] = null;
-                texture[1] = new Texture(Gdx.files.internal("data/butter1.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/rocks.jpg"));
-                break;
-            case 1:
-                size=4;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0] = new Texture(Gdx.files.internal("data/ironcrack.png"));
-                texture[1] = new Texture(Gdx.files.internal("data/ironhand.png"));
-                texture[2] = new Texture(Gdx.files.internal("data/ironbase.png"));
-                texture[3]  = new Texture(Gdx.files.internal("data/city.jpg"));
-                break;
-            case 2:
-                size=3;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0] = new Texture(Gdx.files.internal("data/ironhideN.png"));
-                texture[1] = new Texture(Gdx.files.internal("data/ironhideA.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/ironhideback.jpg"));
-                break;
-            case 11:
-                size=5;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]=null;
-                texture[1] = new Texture(Gdx.files.internal("data/cutout0.png"));
-                texture[2] = new Texture(Gdx.files.internal("data/cutout1.png"));
-                //texture[2]  = new Texture(Gdx.files.internal("data/cutout2.png"));
-                texture[3] = new Texture(Gdx.files.internal("data/cutout3.png"));
-                texture[4] = new Texture(Gdx.files.internal("data/cutout4.png"));
-                break;
-            case 12:
-                size=2;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/chip.png"));
-                texture[1] = new Texture(Gdx.files.internal("data/chip1.png"));
-                break;
-            case 3:
-                size=4;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/hulkbuster0.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/hulkbuster2.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/hulkbuster1.png"));
-                texture[3] = new Texture(Gdx.files.internal("data/hulkbuster.jpg"));
-                break;
-            case 14:
-                size=2;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/earthcrack.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/earthchip.png"));
-                break;
-            case 15:
-                size=2;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/redcrack.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/redhulk.png"));
-                break;
-            case 16:
-                size=2;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/drag1.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/drag2.png"));
-                break;
-            case 17:
-                size=3;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/naruto0.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/naruto1.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/naruto4.jpg"));
-                break;
-            case 18:
-                size=2;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/rain0.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/rain1.png"));
-                break;
-            case 19:
-                size=5;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]=null;
-                texture[1]  = new Texture(Gdx.files.internal("data/flow0.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/flow1.png"));
-                texture[3]  = new Texture(Gdx.files.internal("data/flow2.png"));
-                texture[4]  = new Texture(Gdx.files.internal("data/flow3.jpg"));
-                break;
-            case 20:
-                size=3;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/wonder0.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/wonder1.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/wonder2.jpg"));
-                break;
-            case 21:
-                size=4;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/assassin0.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/assassin1.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/assassin2.png"));
-                texture[3]  = new Texture(Gdx.files.internal("data/assassin3.jpg"));
-                break;
-            case 22:
-                size=4;
-                parallax = true;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/avenger0.png"));
-                texture[1]  = new Texture(Gdx.files.internal("data/avenger1.png"));
-                texture[2]  = new Texture(Gdx.files.internal("data/avenger2.png"));
-                texture[3]  = new Texture(Gdx.files.internal("data/avenger3.jpg"));
-                break;
-            default:
-                size=1;
-                parallax = false;
-                texture = new Texture[size];
-                texture[0]  = new Texture(Gdx.files.internal("data/blue2.jpg"));
+        size = Config.wcd.getSize();
+        //parallax = wcd.isParallax();
+        texture = new Texture[size];
+        String[] layers = Config.wcd.getLayers();
+        for(int i = 0; i < size;i ++) {
+            System.out.println(Gdx.files.local("LWPData/"+Config.wcd.getDirectorName()+"/"+layers[i]).path());
+            texture[i] = new Texture(Gdx.files.local("LWPData/" + Config.wcd.getDirectorName() + "/" + layers[size - i - 1]));
         }
         if(texture !=null) {
             for (Texture t : texture) {

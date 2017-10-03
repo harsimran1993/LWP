@@ -2,6 +2,7 @@ package com.mygdx.purefaithstudio;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.utils.Json;
 
 public class Config {
 	// DON'T CHANGE FILE NAME!!!
@@ -13,6 +14,7 @@ public class Config {
 	public static int fps=160,points = 0;
 	public static float backColor[] = {0,0,0},Sensitivity=4.0f;
     public static String promo="LWP#193#sin";
+    public static WallpaperConfigData wcd;
 
 	public static void load() {
         preferences = Gdx.app.getPreferences("preferences");
@@ -60,6 +62,11 @@ public class Config {
         backColor[2]=preferences.getFloat("blue");
     }
 
+    public static void loadwcd(){
+        String jsonstr = preferences.getString("wcd");
+        Json json = new Json();
+        wcd = json.fromJson(WallpaperConfigData.class,jsonstr);
+    }
    /* public static void loadPoints(){
         if(preferences !=null) {
             if (!preferences.contains("points"))

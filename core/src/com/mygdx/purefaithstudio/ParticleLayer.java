@@ -14,30 +14,30 @@ public class ParticleLayer {
     /*String vertexShader;
     String fragmentShader;
     ShaderProgram shaderProgram;*/
-	public static String EveNo = "0";
-	public static int LWcase = 0;
-	public final String flame = "particle/enemage.party";
-	public final String blueflame = "particle/mage.party";
-	public final String blueflame2 = "particle/mage2.party";
-	public final String chakra = "particle/design4.party";
-	public final String sparks = "particle/sparks.party";
-	public final String sparks2 = "particle/sparks2.party";
-	public final String frag = "particle/frag.party";
-	public final String snow = "particle/snow.party";
-	public AssetManager assetm;
-	Array<PooledEffect> effects;
-	ParticleEffect pe;
-	ParticleEffectPool PePool[];
-	PooledEffect pooleff;
-	ParticleEffectParameter pep;
-	ScaledNumericValue angle;
-	private float lastchange = 0, nxtchng = 5,currentAngle=0,changeAngle=0,variation;
-	private float tint[];
-	private boolean upscale = true;
+    public static String EveNo = "0";
+    public static int LWcase = 0;
+    public final String flame = "particle/enemage.party";
+    public final String blueflame = "particle/mage.party";
+    public final String blueflame2 = "particle/mage2.party";
+    public final String chakra = "particle/design4.party";
+    public final String sparks = "particle/sparks.party";
+    public final String sparks2 = "particle/sparks2.party";
+    public final String frag = "particle/frag.party";
+    public final String snow = "particle/snow.party";
+    public AssetManager assetm;
+    Array<PooledEffect> effects;
+    ParticleEffect pe;
+    ParticleEffectPool PePool[];
+    PooledEffect pooleff;
+    ParticleEffectParameter pep;
+    ScaledNumericValue angle;
+    private float lastchange = 0, nxtchng = 5,currentAngle=0,changeAngle=0,variation;
+    private float tint[];
+    private boolean upscale = true;
 
-	public ParticleLayer() {
-		pep = new ParticleEffectParameter();
-		effects = new Array<PooledEffect>();
+    public ParticleLayer() {
+        pep = new ParticleEffectParameter();
+        effects = new Array<PooledEffect>();
         /*vertexShader = Gdx.files.internal("shaders/ripple.vert").readString();
         fragmentShader = Gdx.files.internal("shaders/ripple.frag").readString();
         shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
@@ -47,15 +47,15 @@ public class ParticleLayer {
         //shaderProgram.setUniformi("u_texture", 0);
         shaderProgram.setUniformf("u_resolution", new Vector2(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()));
         shaderProgram.end();*/
-	}
+    }
 
-	public void loadeffect() {
+    public void loadeffect() {
         dispose();
         assetm = new AssetManager();
-		EveNo = Config.listTest;
-		LWcase = Integer.parseInt(EveNo);
-		effects.clear();
-		switch (LWcase) {
+        EveNo = Config.listTest;
+        LWcase = Integer.parseInt(EveNo);
+        effects.clear();
+        switch (LWcase) {
 
             case 8:
                 pep.atlasFile = "particle/pack.atlas";
@@ -198,122 +198,122 @@ public class ParticleLayer {
                 pooleff.scaleEffect(0.3f);
                 effects.add(pooleff);
                 break;
-			
-		default:
-            break;
-		}
-		if(pooleff !=null)
-		    pooleff.dispose();
-	}
 
-	public void update(float delta) {
+            default:
+                break;
+        }
+        if(pooleff !=null)
+            pooleff.dispose();
+    }
+
+    public void update(float delta) {
         pulse(delta,0.5f);
         /*if(LWcase == 7){
         	rotateChakra(delta);
         }*/
-		for (PooledEffect poole : effects) {
-			poole.update(delta);
-		}
-	}
-	
-	public void rotateChakra(float delta){
-		changeAngle+=delta;
-		if(changeAngle>0.1f){
-			currentAngle = currentAngle>350 ? 10: currentAngle+10;
-			changeAngle = 0;
-		for(PooledEffect poole:effects){
-			for(int i=0;i<poole.getEmitters().size;i++){
-				variation = currentAngle + i*120;
-				angle = poole.getEmitters().get(i).getAngle();
-				angle.setLow(variation);
-				angle.setHigh(variation - 30, variation + 30);
-				
-			}
-		}
-		}
-	}
+        for (PooledEffect poole : effects) {
+            poole.update(delta);
+        }
+    }
 
-	public void pulse(float delta,float reverseScale){
-		if (Config.moving) {
-			lastchange += delta;
-			if (lastchange > nxtchng) {
-				lastchange = 0;
-				if (upscale) {
-					setScale(1/reverseScale);
-					upscale = false;
-					nxtchng = 0.1f;
-				} else {
-					setScale(reverseScale);
-					upscale = true;
-					nxtchng = 3;
-				}
-			}
-		}
+    public void rotateChakra(float delta){
+        changeAngle+=delta;
+        if(changeAngle>0.1f){
+            currentAngle = currentAngle>350 ? 10: currentAngle+10;
+            changeAngle = 0;
+            for(PooledEffect poole:effects){
+                for(int i=0;i<poole.getEmitters().size;i++){
+                    variation = currentAngle + i*120;
+                    angle = poole.getEmitters().get(i).getAngle();
+                    angle.setLow(variation);
+                    angle.setHigh(variation - 30, variation + 30);
 
-	}
+                }
+            }
+        }
+    }
 
-	public void setColor(float[] colors) {
-		for (PooledEffect poole : effects) {
-			for (ParticleEmitter em : poole.getEmitters()) {
-				tint=em.getTint().getColors();
-				tint[0]=colors[0];
-				tint[1]=colors[1];
-				tint[2]=colors[2];
-			}
-		}
-	}
-	
-	public void setEffectColor(PooledEffect poole,float[] colors) {
-			for (ParticleEmitter em : poole.getEmitters()) {
-				tint=em.getTint().getColors();
-				 tint[0] = 0.337f;
-				 tint[1] = 0.325f;
-				 tint[2] = 0.914f;
-			}
-	}
+    public void pulse(float delta,float reverseScale){
+        if (Config.moving) {
+            lastchange += delta;
+            if (lastchange > nxtchng) {
+                lastchange = 0;
+                if (upscale) {
+                    setScale(1/reverseScale);
+                    upscale = false;
+                    nxtchng = 0.1f;
+                } else {
+                    setScale(reverseScale);
+                    upscale = true;
+                    nxtchng = 3;
+                }
+            }
+        }
 
-	public void setScale(float scale) {
-		for (PooledEffect poole : effects) {
-			poole.scaleEffect(scale);
-		}
-	}
+    }
 
-	public void setWind(float speed) {
-		for (PooledEffect poole : effects) {
-			for (ParticleEmitter em : poole.getEmitters()) {
-				if (speed != 0) {
-					em.getWind().setHigh(speed);
-					em.getWind().setActive(true);
-				} else {
-					em.getWind().setActive(false);
-				}
-			}
-		}
-	}
+    public void setColor(float[] colors) {
+        for (PooledEffect poole : effects) {
+            for (ParticleEmitter em : poole.getEmitters()) {
+                tint=em.getTint().getColors();
+                tint[0]=colors[0];
+                tint[1]=colors[1];
+                tint[2]=colors[2];
+            }
+        }
+    }
 
-	public void setAngle(PooledEffect effect, float angleInput, float variation, float deviation) {
-		for (ParticleEmitter em : effect.getEmitters()) {
-			angle = em.getAngle();
-			angle.setLow(angleInput);
-			angle.setHigh(angleInput - variation, angleInput + deviation - variation);
-		}
-	}
+    public void setEffectColor(PooledEffect poole,float[] colors) {
+        for (ParticleEmitter em : poole.getEmitters()) {
+            tint=em.getTint().getColors();
+            tint[0] = 0.337f;
+            tint[1] = 0.325f;
+            tint[2] = 0.914f;
+        }
+    }
 
-	public void render(SpriteBatch batcher) {
+    public void setScale(float scale) {
+        for (PooledEffect poole : effects) {
+            poole.scaleEffect(scale);
+        }
+    }
 
-		for (PooledEffect poole : effects) {
-			poole.draw(batcher);
-			if (poole.isComplete()) {
-				poole.reset();
-			}
-		}
-	}
+    public void setWind(float speed) {
+        for (PooledEffect poole : effects) {
+            for (ParticleEmitter em : poole.getEmitters()) {
+                if (speed != 0) {
+                    em.getWind().setHigh(speed);
+                    em.getWind().setActive(true);
+                } else {
+                    em.getWind().setActive(false);
+                }
+            }
+        }
+    }
 
-	public void dispose() {
+    public void setAngle(PooledEffect effect, float angleInput, float variation, float deviation) {
+        for (ParticleEmitter em : effect.getEmitters()) {
+            angle = em.getAngle();
+            angle.setLow(angleInput);
+            angle.setHigh(angleInput - variation, angleInput + deviation - variation);
+        }
+    }
 
-		for (PooledEffect poole : effects) {
-			poole.dispose();
-		}
+    public void render(SpriteBatch batcher) {
+
+        for (PooledEffect poole : effects) {
+            poole.draw(batcher);
+            if (poole.isComplete()) {
+                poole.reset();
+            }
+        }
+    }
+
+    public void dispose() {
+
+        for (PooledEffect poole : effects) {
+            poole.dispose();
+        }
         if(PePool !=null)
             for(ParticleEffectPool pepo: PePool) {
                 pepo.clear();
@@ -323,10 +323,10 @@ public class ParticleLayer {
         if(pe !=null)
             pe.dispose();
         effects.clear();
-	}
+    }
 
-	public void setPos(float x, float y, int index) {
-		effects.get(index).setPosition(x, y);
-	}
+    public void setPos(float x, float y, int index) {
+        effects.get(index).setPosition(x, y);
+    }
 
 }

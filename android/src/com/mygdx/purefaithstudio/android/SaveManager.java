@@ -24,10 +24,13 @@ import static com.google.android.gms.internal.zzagz.runOnUiThread;
 
 public class SaveManager {
 
+    public static DownloadListner downloadListner;
+
     public static synchronized void saveToFileSystem(Context context, Object object, String fileName) {
         try {
             File dataDir = null;
-            File root = context.getExternalFilesDir("");
+            File root = context.getFilesDir();
+            //File root = context.getExternalFilesDir("");
             dataDir = new File(root,"LWPData");
             if(!dataDir.isDirectory())
                 dataDir.mkdir();
@@ -44,7 +47,8 @@ public class SaveManager {
 
     public static synchronized Object readFromFileSystem(Context context, String binFileName) {
         Object obj = new Object();
-        File root = context.getExternalFilesDir("");
+        File root = context.getFilesDir();
+        //File root = context.getExternalFilesDir("");
         try {
             String tempPath = root + "/LWPData/" + binFileName + ".bin";
             File file = new File(tempPath);
@@ -64,7 +68,7 @@ public class SaveManager {
 
         //make directory structure
         File dataDir = null;
-        File root = context.getExternalFilesDir("");
+        File root = context.getFilesDir();//getExternalFilesDir("");
         dataDir = new File(root,"LWPData");
         if(!dataDir.isDirectory())
             dataDir.mkdir();
@@ -72,35 +76,44 @@ public class SaveManager {
         if(!dataDir.isDirectory())
             dataDir.mkdir();
         String tempPath = root + "/LWPData/"+ directory + "/" + filename;
-        Log.i("harsim",tempPath);
+        //Log.i("harsim",tempPath);
         final File file = new File(tempPath);
-
-        //request file from server
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-
-                try {
-                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-                    FileOutputStream ostream = new FileOutputStream(file, false);
-                    ostream.write(response.body().bytes());
-                    ostream.flush();
-                    ostream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+        if(!file.exists()) {
+            //request file from server
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    downloadListner.failure("download failed!!! plz Try again Later");
                 }
 
-            }
-        });
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                    try {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+                        FileOutputStream ostream = new FileOutputStream(file, false);
+                        ostream.write(response.body().bytes());
+                        ostream.flush();
+                        ostream.close();
+                        downloadListner.update();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        downloadListner.failure("download failed!!! plz Try again Later");
+                    }
+
+                }
+            });
+        }
+    }
+
+
+    interface DownloadListner {
+        void update();
+        void failure(String errorMessage);
     }
 }
