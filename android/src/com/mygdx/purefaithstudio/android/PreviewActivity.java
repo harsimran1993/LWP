@@ -130,7 +130,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
                         progress = 0;
                         for(Layer layer : layers)
                         {
-                            SaveManager.requestImage(getApplicationContext(),layer.getLayerUrl(),wallpaperData.getDirectoryName(),layer.getLayerName()+layer.getLayerType());
+                            SaveManager.requestImage(getApplicationContext(),layer.getLayerUrl(),wallpaperData.getDirectoryName(),layer.getLayerName());
                         }
                     }
                     download.setVisibility(View.GONE);
@@ -152,7 +152,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
                 int i=0;
                 for(Layer layer : layers)
                 {
-                    layerNames[i] = layer.getLayerName()+layer.getLayerType();
+                    layerNames[i] = layer.getLayerName();
                     i++;
                 }
                 WallpaperConfigData wcd = new WallpaperConfigData();
@@ -192,7 +192,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
                     for (Layer layer : layers) {
                         //Log.i("harsim",layer.getLayerUrl());
                         if (i == (layers.size() - 1)) i = 4;
-                        Glide.with(PreviewActivity.this).load(getFilesDir()+"/LWPData/"+wallpaperData.getDirectoryName()+"/"+layer.getLayerName()+layer.getLayerType())
+                        Glide.with(PreviewActivity.this).load(getFilesDir()+"/LWPData/"+wallpaperData.getDirectoryName()+"/"+layer.getLayerName())
                                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                                 .placeholder(R.drawable.download)
                                 .error(R.drawable.error)
@@ -255,7 +255,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
     }
 
     public void choosewall(int position){
-        if(position * 10 < (Config.points + Config.fps)){
+        /*if(position * 10 < (Config.points + Config.fps)){*/
             lastWallp = Config.listTest;
             Config.listTest = ""+position;
             editor.putString("listTest",""+position);
@@ -278,7 +278,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
                     Toast.makeText(PreviewActivity.this, "Please go to your system settings or long press on your homescreen to set Live Wallpaper", Toast.LENGTH_SHORT).show();
                 }
             }
-        }
+        /*}
         else{
             AlertDialog.Builder builder = new AlertDialog.Builder(PreviewActivity.this);
             builder.setTitle("Insufficient Points!!");
@@ -291,7 +291,7 @@ public class PreviewActivity extends AppCompatActivity implements FetchLayer.Fet
                 }
             });
             builder.show();
-        }
+        }*/
     }
 
     @Override

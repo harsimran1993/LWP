@@ -15,19 +15,25 @@ public class Gallery implements Serializable
     @SerializedName("ThumbUrl")
     @Expose
     private String thumbUrl;
-    @SerializedName("IsNew")
+    @SerializedName("LikeCount")
     @Expose
-    private String isNew;
+    private String likeCount;
+    @SerializedName("IsLiked")
+    @Expose
+    private Boolean isLiked;
     @SerializedName("AddedBy")
     @Expose
     private String addedBy;
     @SerializedName("DirectoryName")
     @Expose
     private String directoryName;
-    @SerializedName("Downloads")
+    @SerializedName("DownloadCount")
     @Expose
-    private String downloads;
-    private final static long serialVersionUID = -8636418817250974498L;
+    private String downloadCount;
+    @SerializedName("AddedOn")
+    @Expose
+    private String addedOn;
+    private final static long serialVersionUID = 5541266050859493368L;
 
     /**
      * No args constructor for use in serialization
@@ -39,22 +45,24 @@ public class Gallery implements Serializable
     /**
      *
      * @param title
+     * @param likeCount
      * @param directoryName
-     * @param isNew
+     * @param downloadCount
      * @param thumbUrl
-     * @param downloads
+     * @param addedOn
      * @param iD
      * @param addedBy
      */
-    public Gallery(String iD, String title, String thumbUrl, String isNew, String addedBy, String directoryName, String downloads) {
+    public Gallery(String iD, String title, String thumbUrl, String likeCount, String addedBy, String directoryName, String downloadCount, String addedOn) {
         super();
         this.iD = iD;
         this.title = title;
         this.thumbUrl = thumbUrl;
-        this.isNew = isNew;
+        this.likeCount = likeCount;
         this.addedBy = addedBy;
         this.directoryName = directoryName;
-        this.downloads = downloads;
+        this.downloadCount = downloadCount;
+        this.addedOn = addedOn;
     }
 
     public String getID() {
@@ -81,12 +89,12 @@ public class Gallery implements Serializable
         this.thumbUrl = thumbUrl;
     }
 
-    public String getIsNew() {
-        return isNew;
+    public String getLikeCount() {
+        return likeCount;
     }
 
-    public void setIsNew(String isNew) {
-        this.isNew = isNew;
+    public void setLikeCount(String likeCount) {
+        this.likeCount = likeCount;
     }
 
     public String getAddedBy() {
@@ -105,12 +113,28 @@ public class Gallery implements Serializable
         this.directoryName = directoryName;
     }
 
-    public String getDownloads() {
-        return downloads;
+    public String getDownloadCount() {
+        return downloadCount;
     }
 
-    public void setDownloads(String downloads) {
-        this.downloads = downloads;
+    public void setDownloadCount(String downloadCount) {
+        this.downloadCount = downloadCount;
+    }
+
+    public String getAddedOn() {
+        return addedOn;
+    }
+
+    public void setAddedOn(String addedOn) {
+        this.addedOn = addedOn;
+    }
+
+    public Boolean getIsLiked() {
+        return isLiked;
+    }
+
+    public void setAddedOn(Boolean isLiked) {
+        this.isLiked = isLiked;
     }
 
 

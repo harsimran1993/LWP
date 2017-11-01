@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,8 +47,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     public void onBindViewHolder(GalleryAdapter.ViewHolder holder, int position) {
         Gallery item =mData.get(position);
         holder.imageTitle.setText(item.getTitle());
-        holder.madeBy.setText("by:"+item.getAddedBy());
-        holder.downloads.setText(""+item.getDownloads());
+        holder.madeBy.setText(item.getAddedBy());
+        holder.downloads.setText(item.getDownloadCount());
+        holder.likes.setText(item.getLikeCount());
         if(position * 10 < (Config.points + Config.fps)){
             holder.lock.setVisibility(View.GONE);
         }
@@ -68,7 +70,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         return mData.size();
     }
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView imageTitle,madeBy,downloads;
+        TextView imageTitle,madeBy,downloads,likes;
         ImageView image,lock;
 
         public ViewHolder(View itemView) {
@@ -78,7 +80,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             lock = itemView.findViewById(R.id.lock);
             madeBy = itemView.findViewById(R.id.madeBy);
             downloads = itemView.findViewById(R.id.downloads);
-            itemView.setOnClickListener(this);
+            likes = itemView.findViewById(R.id.Likes);
+            image.setOnClickListener(this);
         }
 
         @Override
@@ -100,5 +103,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
         void onItemClick(View view, Gallery gallery);
+        void onLikeClick(View view,int position);
     }
 }

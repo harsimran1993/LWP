@@ -5,6 +5,6 @@ package com.mygdx.purefaithstudio.android;
  */
 
 public class Constants {
-    public final static String URL = "http://192.168.0.101:8080/wallpaperserver/list";
-    public final static String layerURL = "http://192.168.0.101:8080/wallpaperserver/layerlist?wallID=";
+    public final static String URL = "http://192.168.0.103:8080/wallpaperserver/list";
+    public final static String layerURL = "http://192.168.0.103:8080/wallpaperserver/layerlist?wallID=";
 }

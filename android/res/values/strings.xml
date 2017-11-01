@@ -105,6 +105,14 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="settings_QATitle">Experiencing Black Screen?</string>
+    <string name="settings_QASummary">Please white-list the app in task killers.
+                                        \nExample: Clean Master ,CCleaner etc.
+                                        \n\nXiaomi users
+                                        \nSettings -> Permissions-> Autostart
+                                        \nSettings -> battery usage -> enable no restriction
+                                        \nSettings -> background location -> select allow
+    </string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

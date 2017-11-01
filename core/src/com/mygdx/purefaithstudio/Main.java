@@ -26,7 +26,7 @@ public class Main extends Base {
     //private ParticleLayer partlay;
     //private FrameBuffer fbo;
     //private TextureRegion fbr;
-    private float accelX=0,lastAccelX=0,thresh=0.2f,fact=0.4f;
+    private float accelX=0,lastAccelX=0,thresh=0.3f,fact=0.4f;
     private float accelY=0,lastAccelY=0;
     //private float accelZ=0,lastAccelZ=0;
     private float dipMul=0.0f,touchcount=0,moveX,moveY;
@@ -49,9 +49,10 @@ public class Main extends Base {
         batch = new SpriteBatch();
         batch.setProjectionMatrix(camera.combined);
         batch.enableBlending();
-        if(Config.useGyro && !gyroscope) {
+        if(/*Config.useGyro &&*/ !gyroscope) {
             gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
         }
+        setInputProcessor();
         /*if(!parallax) {
             setInputProcessor();
         }*/
@@ -104,7 +105,7 @@ public class Main extends Base {
                 partlay.loadeffect();
             loadImageTexture();
         }*/
-        if(Config.useGyro && !gyroscope) {
+        if(/*Config.useGyro &&*/ !gyroscope) {
             gyroscope = Gdx.input.isPeripheralAvailable(Peripheral.Gyroscope);
         }
         //Gdx.app.log("harsim","render");
@@ -225,8 +226,8 @@ public class Main extends Base {
             @Override
             public boolean touchUp(int screenX, int screenY, int pointer, int button) {
                 // TODO Auto-generated method stub
-               /* touchcount--;
-                if (com.mygdx.purefaithstudio.Config.persistent) {
+               touchcount--;
+                /* if (com.mygdx.purefaithstudio.Config.persistent) {
                     //partlay.setWind((240 - touch.x) * 0.2f);
                     if(partlay!=null)
                         partlay.setScale(0.6f);
@@ -249,8 +250,8 @@ public class Main extends Base {
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
                 // TODO Auto-generated method stub
 
-               /* touchcount++;
-                    /*touch = new Vector2();
+                touchcount++;
+                 /*   /*touch = new Vector2();
                     touch.x = (int) (screenX * 480 / Gdx.graphics.getWidth());
                     touch.y = (int) (screenY * 800 / Gdx.graphics.getHeight());
                     touch.y = 800 - touch.y;

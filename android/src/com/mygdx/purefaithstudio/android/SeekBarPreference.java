@@ -19,7 +19,7 @@ import com.mygdx.purefaithstudio.Config;
 public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
 
     private SeekBar mSeekBar;
-    public static int maximum    = 50;
+    public static int maximum    = 100;
     public static int interval   = 1;
     private float oldValue = 40;
 
@@ -82,14 +82,14 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
     @Override
     protected Object onGetDefaultValue(TypedArray ta, int index) {
 
-        int dValue = (int)ta.getInt(index,50);
+        int dValue = (int)ta.getInt(index,40);
         return validateValue(dValue);
     }
 
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
 
-        int temp = restoreValue ? getPersistedInt(50) : (Integer)defaultValue;
+        int temp = restoreValue ? getPersistedInt(40) : (Integer)defaultValue;
 
         if(!restoreValue)
             persistInt(temp);
